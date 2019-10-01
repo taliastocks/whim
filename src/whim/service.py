@@ -20,6 +20,17 @@ class SilentRequestHandler(simple_server.WSGIRequestHandler):
         del args
 
 
+def _requires_auth(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if flask.session.get('authenticated') is True:
+            return func(*args, **kwargs)
+        else:
+            flask.abort(403)
+
+    return wrapper
+
+
 class Service(object):
     def __init__(self, *,
                  settings: settings.SectionSettings,
@@ -63,15 +74,23 @@ class Service(object):
         ))
 
         with server as httpd:
+            done_serving = False
+
             def _serve_forever():
-                httpd.serve_forever()
+                nonlocal done_serving
+                while not done_serving:
+                    httpd.handle_request()
 
             # Serve requests until the cookie is expired.
-            for i in range(10):  # Handle requests in a few threads.
-                threading.Thread(target=_serve_forever, daemon=True).start()
-            while not self._cookie.is_expired():
-                time.sleep(5)
-            print('cookie expired, quitting')
+            try:
+                for i in range(10):  # Handle requests in a few threads.
+                    threading.Thread(target=_serve_forever, daemon=True).start()
+
+                while not self._cookie.is_expired():
+                    time.sleep(5)
+                print('cookie expired, quitting')
+            finally:
+                done_serving = True
 
     def is_running(self) -> bool:
         return self._get_running_version() == self.route_version() and \
@@ -98,18 +117,13 @@ class Service(object):
             flask.session['authenticated'] = True
             return flask.redirect(flask.url_for('.route_index'))
 
+    @_requires_auth
     def route_edit(self, path):
-        path = '/' + path.lstrip('/')
-        return 'editing {}'.format(path)
+        return self._app.send_static_file('editor.html')
 
-    def route_static(self, path):
-        path = '/' + path.lstrip('/')
-        return flask.send_file(static.get(path))
-
+    @_requires_auth
     def route_index(self) -> str:
-        if flask.session.get('authenticated') is True:
-            return 'Welcome to WHIM!'
-        return 'Authentication failure.'
+        return self._app.send_static_file('welcome.html')
 
     @property
     def _app(self):
@@ -120,7 +134,6 @@ class Service(object):
             app.route('/cookie')(self.route_cookie)
             app.route('/auth')(self.route_auth)
             app.route('/edit/<path:path>')(self.route_edit)
-            app.route('/static/<path:path>')(self.route_static)
             app.route('/')(self.route_index)
         return self.__app
 
