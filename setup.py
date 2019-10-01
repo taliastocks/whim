@@ -31,7 +31,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     author='Collin RM Stocks',
     author_email='collinstocks@gmail.com',
-    packages=['whim'],
+    packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     install_requires=[
         'cachetools>=3.1.1,<3.2',

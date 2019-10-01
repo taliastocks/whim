@@ -1,2 +1,2 @@
 #!/bin/sh
-cd src && python3 -m whim "$@"
+PYTHONPATH=src python3 -m whim "$@"
