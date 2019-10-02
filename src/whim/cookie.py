@@ -10,7 +10,7 @@ class Cookie(object):
         self._cookie_filename = settings.get_string('cookie_file')
         self._value = self._get_value_from_disk()
 
-    _is_expired_cache = cachetools.TTLCache(maxsize=100, ttl=5)
+    _is_expired_cache = cachetools.TTLCache(maxsize=100, ttl=1)
     @cachetools.cached(_is_expired_cache)
     def is_expired(self) -> bool:
         return self._value != self._get_value_from_disk()

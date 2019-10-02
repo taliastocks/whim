@@ -9,7 +9,7 @@ import webbrowser
 
 import fire
 
-from whim import cookie, platform, service, settings
+from whim import api, cookie, platform, service, settings
 
 
 class ServiceProcess(multiprocessing.Process):
@@ -33,6 +33,7 @@ def main(filename=None, *,
     my_service = service.Service(
         settings=my_settings.get_section(service.__name__),
         cookie=my_cookie,
+        api=api.EditorAPI(),
     )
 
     if serve_foreground:

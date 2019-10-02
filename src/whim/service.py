@@ -1,4 +1,5 @@
 import functools
+import json
 import os
 import threading
 import time
@@ -7,36 +8,27 @@ import uuid
 import webbrowser
 from wsgiref import simple_server
 
-import flask
 import requests
+from werkzeug import exceptions, routing, utils, wrappers, wsgi
 
 import whim
-from whim import cookie, settings, static
+from whim import api, cookie, settings
 
 
-class SilentRequestHandler(simple_server.WSGIRequestHandler):
+class _SilentRequestHandler(simple_server.WSGIRequestHandler):
     def log_message(self, format, *args):
         del format
         del args
 
 
-def _requires_auth(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if flask.session.get('authenticated') is True:
-            return func(*args, **kwargs)
-        else:
-            flask.abort(403)
-
-    return wrapper
-
-
 class Service(object):
     def __init__(self, *,
                  settings: settings.SectionSettings,
-                 cookie: cookie.Cookie):
+                 cookie: cookie.Cookie,
+                 api: api.EditorAPI):
         self._settings = settings
         self._cookie = cookie
+        self._api = api
         self._login_token = None
         self.__app = None
 
@@ -57,7 +49,7 @@ class Service(object):
             try:
                 # Try to create a server. This may fail if the address is in use.
                 server = simple_server.make_server(self.host, self.port, self._app,
-                                                   handler_class=SilentRequestHandler)
+                                                   handler_class=_SilentRequestHandler)
                 break
             except OSError:
                 print('waiting for port {port} to be free'.format(port=self.port))
@@ -87,7 +79,7 @@ class Service(object):
                     threading.Thread(target=_serve_forever, daemon=True).start()
 
                 while not self._cookie.is_expired():
-                    time.sleep(5)
+                    time.sleep(1)
                 print('cookie expired, quitting')
             finally:
                 done_serving = True
@@ -105,36 +97,82 @@ class Service(object):
             )
         )
 
-    def route_version(self) -> str:
+    def route_version(self, request=None) -> str:
         return '{} {}'.format(whim.__name__, whim.__version__)
 
-    def route_cookie(self) -> str:
+    def route_cookie(self, request=None) -> str:
         return self._cookie.get_value()
 
-    def route_auth(self):
-        if self._login_token is not None and flask.request.args.get('login_token') == self._login_token:
-            self._login_token = None  # Prevent reuse.
-            flask.session['authenticated'] = True
-            return flask.redirect(flask.url_for('.route_index'))
+    def route_auth(self, request):
+        if self._login_token is not None and request.args.get('login_token') == self._login_token:
+            self._login_token = str(uuid.uuid4())  # Prevent reuse.
+            response = utils.redirect('/')
+            response.set_cookie(
+                'login_token',
+                self._login_token,
+                httponly=True,
+                samesite='Strict',
+            )
+            return response
 
-    @_requires_auth
-    def route_edit(self, path):
-        return self._app.send_static_file('editor.html')
+        raise exceptions.Forbidden()
 
-    @_requires_auth
-    def route_index(self) -> str:
-        return self._app.send_static_file('welcome.html')
+    def route_edit(self, path, request):
+        if request.cookies.get('login_token') != self._login_token:
+            raise exceptions.Forbidden()
+
+        request.environ['PATH_INFO'] = '/static/editor.html'
+        return self._app
+
+    def route_index(self, request):
+        if request.cookies.get('login_token') != self._login_token:
+            raise exceptions.Forbidden()
+
+        request.environ['PATH_INFO'] = '/static/welcome.html'
+        return self._app
+
+    def route_api(self, endpoint, request):
+        if request.cookies.get('login_token') != self._login_token:
+            raise exceptions.Forbidden()
+
+        if hasattr(self._api, endpoint):
+            request_data = json.loads(request.get_data())
+            response_data = getattr(self._api, endpoint)(**request_data)
+            return wrappers.Response(
+                json.dumps(response_data),
+                mimetype='application/json',
+            )
+        else:
+            raise exceptions.NotFound()
 
     @property
     def _app(self):
         if self.__app is None:
-            self.__app = app = flask.Flask(__name__)
-            app.secret_key = str(uuid.uuid4())
-            app.route('/version')(self.route_version)
-            app.route('/cookie')(self.route_cookie)
-            app.route('/auth')(self.route_auth)
-            app.route('/edit/<path:path>')(self.route_edit)
-            app.route('/')(self.route_index)
+            url_map = routing.Map([
+                routing.Rule('/', endpoint='route_index'),
+                routing.Rule('/api/<endpoint>', endpoint='route_api'),
+                routing.Rule('/auth', endpoint='route_auth'),
+                routing.Rule('/cookie', endpoint='route_cookie'),
+                routing.Rule('/edit/<path:path>', endpoint='route_edit'),
+                routing.Rule('/version', endpoint='route_version'),
+            ])
+
+            @wrappers.Request.application
+            def app(request):
+                adapter = url_map.bind_to_environ(request.environ)
+                endpoint, values = adapter.match()
+                response = getattr(self, endpoint)(request=request, **values)
+                if isinstance(response, str):
+                    response = wrappers.Response(
+                        response,
+                        mimetype='text/plain',
+                    )
+                return response
+
+            app = wsgi.SharedDataMiddleware(app, {
+                '/static': ('whim', 'static'),
+            })
+            self.__app = app
         return self.__app
 
     def _get_running_version(self) -> str:
