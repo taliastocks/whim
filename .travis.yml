@@ -11,7 +11,7 @@ script: pytest
 jobs:
   include:
     - stage: deploy
-      script: sh ./build.sh
+      script: ./build.sh
       deploy:
         provider: releases
         api_key:
