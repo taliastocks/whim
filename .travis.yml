@@ -21,4 +21,4 @@ jobs:
         draft: true
         on:
           repo: Sibilance/whim
-          # tags: true
+          tags: true
