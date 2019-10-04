@@ -18,7 +18,6 @@ jobs:
           secure: I6rrrOWsEvXHp4HtBo/NZBVVtxILgCebbblv1hTwcp+xAGnZIPbY9j8G094yvpIb4JLp81pJISAux6gK6Q0pdV8skeL9bmQ1tPSPZBmat1Ic3QlourqEf0vlK965stZo4TACK0SV740bCkEezZxkFUIB42yzkL1/Qh0vdAgbWvDPXFSchJihXRKuilm8FNr9InZNfGaQpUG24EjP4fGP1gtUcMCxgV4GBh3pwA80PdwtROLO9xG4YSNunZ8Jy4DM0Si0EHIo0OEI51DehFHGCy/3elUAHg5V7DXh7pgGf0KatlI3P5m/x4dZuKB7M4TEZRTDUsmWpbxhyiTWwEEdCD09pZuWQ6eBdZ6pdpg0jaoTrnDj0IobdXlE8OIUFVsFMdZR+8XV4kRjUJPukGgJxU3EWqdl7nK7lqxitmDSAyJHdLC598OQPlRWu1cdWUY9ienL18OvGBvfLgvEJuCHIJN/qiwsvqFJUr9CFFjfw6DXhf8MwU1ft7DCKc7VVFc7UiROP6Gryj31/A7n2XmUKlqY7Xq1zcxzHKRHzTJbWyv8PmfED5xio1aEh5FDGwq0l0jdGUy5NwWrUUijSIM0KeiD0Ish7Nh1pZcycnSgiEKw16Vd0Szx9QHUWjM+WT8MFuriD2h4euHQyrSWKeef+7TRkKa2NwaCo7Sm1O/tpGk=
         file: whim
         skip_cleanup: true
-        draft: true
         on:
           repo: Sibilance/whim
           tags: true
