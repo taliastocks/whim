@@ -3,43 +3,55 @@
   <head>
     <meta charset="utf-8">
     <title>Whim</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="manifest" href="/static/site.webmanifest">
     <link rel="stylesheet" href="/static/editor.css">
   </head>
   <body>
     <div id="editor"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/ace.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/ext-modelist.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.6/ext-language_tools.js"></script>
+    <script src="/static/ace-1.4.6/ace.js"></script>
+    <script src="/static/ace-1.4.6/ext-modelist.js"></script>
+    <script src="/static/ace-1.4.6/ext-language_tools.js"></script>
+    <script src="/static/favico-0.3.10.min.js"></script>
+    <script src="/static/save_manager.js"></script>
     <script src="/static/api.js"></script>
     <script>
       let editor = ace.edit('editor');
       let file_path = /^\/edit(.*)$/.exec(location.pathname)[1];
       let api_client = new APIClient();
+      var favicon = new Favico({
+          animation: 'none',
+          position: 'up',
+          bgColor: '#f00',
+      });
+
+      let save_manager = new SaveManager(
+        editor,
+        api_client,
+        () => favicon.badge(' '), // onChange
+        () => favicon.badge('') // onSave
+      );
 
       document.addEventListener('keydown', event => {
          if((event.ctrlKey || event.metaKey) && event.which == 83) {
-            // Save Function
-            api_client.writeFile(file_path, editor.getValue()).catch(error => {
-              alert('Failed to save.');
-            });
+            save_manager.save(file_path);
             event.preventDefault();
             return false;
         }
       });
 
-      !async function(){
-        let modelist = ace.require("ace/ext/modelist");
-        editor.setTheme('ace/theme/cobalt');
-        editor.setOptions({
-          enableLiveAutocompletion: true,
-          printMarginColumn: 120,
-          scrollPastEnd: 1,
-          showInvisibles: true,
-        });
-        editor.session.setMode(modelist.getModeForPath(file_path).mode);
-        let content = await api_client.readFile(file_path);
-        editor.setValue(content, -1);
-      }();
+      let modelist = ace.require("ace/ext/modelist");
+      editor.setTheme('ace/theme/cobalt');
+      editor.setOptions({
+        enableLiveAutocompletion: true,
+        printMarginColumn: 120,
+        scrollPastEnd: 1,
+        showInvisibles: true,
+      });
+
+      save_manager.open(file_path);
+
     </script>
   </body>
 </html>

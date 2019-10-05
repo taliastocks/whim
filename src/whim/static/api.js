@@ -1,5 +1,5 @@
 class APIClient {
-  async call(method, payload) {
+  call(method, payload) {
     let promise = new Promise(function(resolve, reject) {
       let xhr = new XMLHttpRequest();
 
@@ -19,7 +19,7 @@ class APIClient {
       xhr.send(JSON.stringify(payload));
     });
 
-    return await promise;
+    return promise;
   }
 
   async readFile(file_path) {

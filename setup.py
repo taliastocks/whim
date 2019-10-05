@@ -34,10 +34,11 @@ setuptools.setup(
     packages=setuptools.find_packages('src'),
     package_data={
         '': ['*.txt', '*.rst', '*.md'],
-        'whim.static': ['*.html', '*.js', '*.css'],
+        'whim.static': ['*', '**/*'],
     },
     package_dir={'': 'src'},
     install_requires=[
+        'atomicwrites>=1.3.0,<2',
         'cachetools>=3.1.1,<3.2',
         'fire>=0.2.1,<0.3',
         'requests>=2.22.0,<3',
