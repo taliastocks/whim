@@ -33,6 +33,14 @@
         () => favicon.badge('') // onSave
       );
 
+      window.addEventListener('beforeunload', event => {
+        if (save_manager.isUnsaved()) {
+          event.preventDefault();
+          event.returnValue = 'Leave site? Changes you made may not be saved.';
+          return event.returnValue;
+        }
+      })
+
       document.addEventListener('keydown', event => {
          if((event.ctrlKey || event.metaKey) && event.which == 83) {
             save_manager.save(file_path);

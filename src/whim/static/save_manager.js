@@ -25,6 +25,9 @@ class SaveManager {
     this._saved_content = content;
     this._checkSaved();
   }
+  isUnsaved() {
+    return this._unsaved_changes;
+  }
   async _onChange() {
     if (!this._unsaved_changes) {
       this._checkSaved();
