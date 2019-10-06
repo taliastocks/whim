@@ -6,6 +6,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon-180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="manifest" href="/static/site.webmanifest">
+    <link rel="stylesheet" href="/static/alertify.min.css">
+    <link rel="stylesheet" href="/static/alertify.themes.default.min.css">
     <link rel="stylesheet" href="/static/editor.css">
   </head>
   <body>
@@ -13,14 +15,16 @@
     <script src="/static/ace-1.4.6/ace.js"></script>
     <script src="/static/ace-1.4.6/ext-modelist.js"></script>
     <script src="/static/ace-1.4.6/ext-language_tools.js"></script>
+    <script src="/static/alertify.min.js"></script>
     <script src="/static/favico-0.3.10.min.js"></script>
-    <script src="/static/save_manager.js"></script>
     <script src="/static/api.js"></script>
+    <script src="/static/async_alerts.js"></script>
+    <script src="/static/save_manager.js"></script>
     <script>
       let editor = ace.edit('editor');
       let file_path = /^\/edit(.*)$/.exec(location.pathname)[1];
       let api_client = new APIClient();
-      var favicon = new Favico({
+      let favicon = new Favico({
           animation: 'none',
           position: 'up',
           bgColor: '#f00',
@@ -29,8 +33,13 @@
       let save_manager = new SaveManager(
         editor,
         api_client,
-        () => favicon.badge(' '), // onChange
-        () => favicon.badge('') // onSave
+        (content) => { // onChange
+          sessionStorage.setItem('unsavedContent_' + file_path, content);
+          favicon.badge(' ');
+        },
+        () => { // onSave
+          favicon.badge('');
+        }
       );
 
       window.addEventListener('beforeunload', event => {
@@ -58,7 +67,24 @@
         showInvisibles: true,
       });
 
-      save_manager.open(file_path);
+      (async () => {
+
+        let unsaved_content = sessionStorage.getItem('unsavedContent_' + file_path);
+        if (unsaved_content != null && !await asyncConfirm('Load previously unsaved changes?')) {
+          unsaved_content = null;
+        }
+        await save_manager.open(file_path, unsaved_content);
+
+        let cursor_position = JSON.parse(sessionStorage.getItem('cursorPosition_' + file_path));
+        if (cursor_position != null) {
+          editor.gotoLine(cursor_position.row + 1, cursor_position.column + 1);
+        }
+
+        editor.selection.on('changeCursor', () => {
+          sessionStorage.setItem('cursorPosition_' + file_path, JSON.stringify(editor.getCursorPosition()));
+        });
+
+      })();
 
     </script>
   </body>
