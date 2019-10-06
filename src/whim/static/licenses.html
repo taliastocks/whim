@@ -1,0 +1,34 @@
+<pre id="licenses">
+Ace Editor:
+https://github.com/ajaxorg/ace/blob/master/LICENSE
+
+Cachetools:
+https://github.com/tkem/cachetools/blob/master/LICENSE
+
+Python Atomicwrites:
+https://github.com/untitaker/python-atomicwrites/blob/master/LICENSE
+
+Python Fire:
+https://github.com/google/python-fire/blob/master/LICENSE
+
+Requests:
+https://github.com/psf/requests/blob/master/LICENSE
+
+Setuptools:
+https://github.com/pypa/setuptools/blob/master/LICENSE
+
+Werkzeug:
+https://github.com/pallets/werkzeug/blob/master/LICENSE.rst
+
+Whim:
+https://github.com/Sibilance/whim/blob/master/LICENSE
+</pre>
+<script>
+  (() => {
+    let elem = document.querySelector('#licenses');
+    elem.innerHTML = elem.innerHTML.replace(
+      /(https?:\/\/[^\s]+)/g,
+      '<a href="$1">$1</a>'
+    );
+  })();
+</script>

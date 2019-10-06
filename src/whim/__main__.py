@@ -21,7 +21,8 @@ def main(filename=None, *,
          settings_dir='~/.whim',
          restart=False,
          shutdown=False,
-         serve_foreground=False):
+         serve_foreground=False,
+         licenses=False):
     settings_dir = os.path.expandvars(os.path.expanduser(settings_dir))
 
     my_settings = settings.Settings(
@@ -64,6 +65,9 @@ def main(filename=None, *,
     if filename is not None:
         filename = os.path.expandvars(os.path.expanduser(filename))
         my_service.open_editor(filename)
+
+    if licenses:
+        my_service.open_licenses()
 
 
 if __name__ == '__main__':

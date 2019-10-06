@@ -97,6 +97,13 @@ class Service(object):
             )
         )
 
+    def open_licenses(self):
+        webbrowser.open_new_tab(
+            'http://localhost:{port}/static/licenses.html'.format(
+                port=self.port,
+            )
+        )
+
     def route_version(self, request=None) -> str:
         return '{} {}'.format(whim.__name__, whim.__version__)
 
