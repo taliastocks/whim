@@ -27,6 +27,7 @@ setuptools.setup(
     version=find_version('src', 'whim', '__init__.py'),
     description='A simple editor',
     license='gpl-3.0',
+    url='https://github.com/Sibilance/whim',
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     author='Collin RM Stocks',

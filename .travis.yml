@@ -28,3 +28,6 @@ jobs:
         user: "__token__"
         password:
           secure: "hZ78FfY0TW45P6UmiGo2u2pMIn3VcbX9TLTgk4Ttmu8gMWY3smpHLukFpg4QTLFm87xqqwG5SyzCa9FpGNUSDGuMBliy6QkabbVbRc9ex5N5q4JXxl+y7YBxWBejyawt3bqoLpzvCkHLPT+y4S86nXiJPwyHMtSbVz/hLbWYWoRFm761Mc7Ap1rO6cMY34kVqhO5omrr4666i9tyCDzGYBI52R7NioGaEaUIkW9U03GN0NoSElivD2WiokmTqU4snaTCo6h5r7w5eOPGxP+Q6lwoeDju892FKa7EHVnyXHxVR4tETasD0LG9sFdH4VgYzJrucPquVYv7uYKwonPQV21YV2BXJkg1XVuDLulpwI3+iJc6XZFI2X9feONulf6P5N/cV2jOTszGEW77/c9yN9MWqgKLqBAv5IbimP+SpS/Ywn9s0HOu8yirWu43XdtZXpQpkKQzgnnECNmBgDZ5kdSDQ+JH1pt4ViwaGIBrhxwZBD5UjY0Dz5nZgEKGrUSLWTjx2YQgNCsAnrucOgm0hbJM4svmRKO4NGVEJIf9XbDNbxb74ZRyZvn2kx/55t+ckEP8Cnfrv996Gh07mcgqd3IGwU5/opw2jiyoouDEBeie8dfE7Kxf8LWju0sXnrdx++FkKpnZg+2m/FKogQWvTJoygTviaB1FJZqD+a+lFc8="
+        on:
+          repo: Sibilance/whim
+          tags: true
